@@ -1,0 +1,46 @@
+{
+  "name": "cs-student-simulator",
+  "displayName": "CS Student Simulator",
+  "description": "View and annotate PDFs without leaving VS Code. Annotations are saved directly into the PDF file.",
+  "version": "0.1.0",
+  "license": "GPL-3.0-only",
+  "publisher": "landofbol",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/landofbol/cs-student-simulator"
+  },
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "csStudentSimulator.pdf",
+        "displayName": "PDF Annotator",
+        "selector": [
+          {
+            "filenamePattern": "*.pdf"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
+  },
+  "scripts": {
+    "vendor": "node scripts/vendor-pdfjs.mjs",
+    "check": "tsc --noEmit",
+    "compile": "tsc --noEmit && node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/vscode": "^1.90.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.5.0"
+  }
+}
