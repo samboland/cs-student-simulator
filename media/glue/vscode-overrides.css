@@ -1,0 +1,32 @@
+/* Webview-specific tweaks layered over the stock PDF.js viewer.css. */
+
+/* VS Code injects default webview styles (body padding: 0 20px, etc.); the
+   viewer assumes a zero-padding body, so the injected padding shifts the whole
+   UI right and pushes it past the frame. Neutralize it. */
+html,
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* The stock toolbar is three flex groups under justify-content: space-between,
+   so the middle (zoom) group only appears centered when the side groups have
+   equal width. Give the side groups equal flexible width so the middle group
+   is truly centered. */
+#toolbarViewerLeft,
+#toolbarViewerRight {
+  flex: 1 1 0 !important;
+}
+
+/* Every .toolbarHorizontalGroup is space-between, so once the side groups
+   stretch, their children spread across the slack. Pack them to the edges. */
+#toolbarViewerLeft {
+  justify-content: flex-start !important;
+}
+
+#toolbarViewerRight {
+  justify-content: flex-end !important;
+}

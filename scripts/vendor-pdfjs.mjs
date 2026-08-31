@@ -39,6 +39,14 @@ async function patchViewerHtml() {
   const file = path.join(dest, "web", "viewer.html");
   let html = await readFile(file, "utf8");
 
+  // The stock viewer ships its own CSP with base-uri 'none' and 'self' sources,
+  // which blocks our <base> tag and every webview asset load. Remove it; the
+  // webview-appropriate CSP is injected below.
+  html = html.replace(
+    /<meta\s+http-equiv="Content-Security-Policy"[\s\S]*?\/>\s*/g,
+    ""
+  );
+
   // Placeholders substituted at runtime by src/viewerHtml.ts. The <base> tag
   // makes every relative asset reference (css, mjs, cmaps, fonts, locale,
   // images) resolve to a webview resource URI.
@@ -51,6 +59,12 @@ async function patchViewerHtml() {
   html = html.replace(
     /<\/body>/,
     `<script src="%GLUE%" type="module"></script>\n</body>`
+  );
+
+  // Our CSS tweaks, after viewer.css so they win the cascade.
+  html = html.replace(
+    /<\/head>/,
+    `<link rel="stylesheet" href="%OVERRIDES%">\n</head>`
   );
 
   await writeFile(file, html);

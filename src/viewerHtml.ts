@@ -17,19 +17,24 @@ export async function getViewerHtml(
   const glueUri = webview.asWebviewUri(
     vscode.Uri.joinPath(context.extensionUri, "media", "glue", "vscode-glue.mjs")
   );
+  const overridesUri = webview.asWebviewUri(
+    vscode.Uri.joinPath(context.extensionUri, "media", "glue", "vscode-overrides.css")
+  );
 
   const csp = [
     `default-src 'none'`,
-    `script-src ${webview.cspSource}`,
+    `script-src ${webview.cspSource} 'wasm-unsafe-eval'`,
     `style-src ${webview.cspSource} 'unsafe-inline'`,
     `img-src ${webview.cspSource} blob: data:`,
     `font-src ${webview.cspSource}`,
     `worker-src ${webview.cspSource} blob:`,
+    `media-src blob:`,
     `connect-src ${webview.cspSource} blob: data:`,
   ].join("; ");
 
   return raw
     .replace("%CSP%", csp)
     .replace("%BASE%", `${webRoot.toString()}/`)
-    .replace("%GLUE%", glueUri.toString());
+    .replace("%GLUE%", glueUri.toString())
+    .replace("%OVERRIDES%", overridesUri.toString());
 }

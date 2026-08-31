@@ -1,6 +1,17 @@
 import * as vscode from "vscode";
 import { PdfDocument } from "./pdfDocument";
 import { getViewerHtml } from "./viewerHtml";
+import { debugLog } from "./debugLog";
+
+/**
+ * Node Buffers (what workspace.fs.readFile really returns) do not survive
+ * webview message serialization intact — copy into a standalone ArrayBuffer.
+ */
+function toPlainArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const copy = new Uint8Array(bytes.byteLength);
+  copy.set(bytes);
+  return copy.buffer;
+}
 
 type WebviewMessage =
   | { type: "ready" }
@@ -55,9 +66,13 @@ export class PdfEditorProvider implements vscode.CustomEditorProvider<PdfDocumen
     panel.webview.html = await getViewerHtml(this.context, panel.webview);
 
     panel.webview.onDidReceiveMessage((msg: WebviewMessage) => {
+      debugLog(`recv from webview: ${msg.type}`);
       switch (msg.type) {
         case "ready":
-          void panel.webview.postMessage({ type: "init", bytes: document.initialBytes });
+          debugLog(`posting init, ${document.initialBytes.byteLength} bytes`);
+          void panel.webview
+            .postMessage({ type: "init", bytes: toPlainArrayBuffer(document.initialBytes) })
+            .then((delivered) => debugLog(`init delivered: ${delivered}`));
           break;
         case "edited":
           this.changeEmitter.fire({ document });
@@ -78,6 +93,7 @@ export class PdfEditorProvider implements vscode.CustomEditorProvider<PdfDocumen
         }
         case "log":
           this.output.appendLine(`[webview:${msg.level}] ${msg.message}`);
+          debugLog(`[webview:${msg.level}] ${msg.message}`);
           break;
       }
     });
@@ -120,7 +136,7 @@ export class PdfEditorProvider implements vscode.CustomEditorProvider<PdfDocumen
     document.initialBytes = bytes;
     const panel = this.webviews.get(document);
     if (panel) {
-      await panel.webview.postMessage({ type: "init", bytes });
+      await panel.webview.postMessage({ type: "init", bytes: toPlainArrayBuffer(bytes) });
     }
   }
 
