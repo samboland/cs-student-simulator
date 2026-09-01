@@ -1,6 +1,8 @@
 // Bridge between the stock PDF.js viewer and the VS Code custom editor host.
 // Loaded as a module after viewer.mjs (injected by scripts/vendor-pdfjs.mjs).
 
+import { initToolbox } from "./toolbox.mjs";
+
 const vscode = acquireVsCodeApi();
 const post = (msg) => vscode.postMessage(msg);
 
@@ -62,6 +64,8 @@ window.addEventListener("message", async (event) => {
         // re-init (revert) or retry never hands over a detached buffer.
         await app.open({ data: toUint8(msg.bytes).slice() });
         trace(`open() resolved; pages=${app.pagesCount}`);
+        // Mode switches are ignored before a document is loaded.
+        toolbox?.activateDefault();
         const toolbar = document.getElementById("toolbarViewer");
         trace(
           `layout: innerWidth=${window.innerWidth} bodyWidth=${document.body.offsetWidth} ` +
@@ -102,9 +106,12 @@ window.addEventListener(
   true
 );
 
+let toolbox = null;
+
 (async () => {
   await app.initializedPromise;
   trace("initializedPromise resolved, wiring eventBus + posting ready");
+  toolbox = initToolbox(app, trace);
   const onStatesChanged = ({ details }) => {
     if (details?.hasSomethingToUndo) {
       post({ type: "edited" });

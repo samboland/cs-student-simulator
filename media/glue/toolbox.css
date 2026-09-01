@@ -1,0 +1,220 @@
+/* Left toolbox layout and the stock-chrome pieces it replaces. */
+
+/* The toolbox replaces the stock editor mode buttons. */
+#editorModeButtons,
+#editorModeSeparator {
+  display: none !important;
+}
+
+:root {
+  --cs-toolbox-width: 40px;
+  /* The stock chrome relies on subtle shadows; every surrounding UI segment
+     gets an explicit dividing line instead. */
+  --cs-separator: light-dark(rgb(0 0 0 / 0.25), rgb(255 255 255 / 0.16));
+}
+
+/* Editor-app convention: the top toolbar spans the full width and the toolbox
+   sits below it. The viewer area is shifted right by the outer margin; the
+   toolbar pulls itself back to full width with a negative margin. */
+#outerContainer {
+  margin-left: var(--cs-toolbox-width);
+  width: calc(100% - var(--cs-toolbox-width));
+}
+
+#toolbarContainer {
+  margin-left: calc(-1 * var(--cs-toolbox-width));
+  width: calc(100% + var(--cs-toolbox-width));
+  border-bottom: 1px solid var(--cs-separator);
+  box-sizing: border-box;
+}
+
+/* The pages panel is anchored inside the toolbar, which now starts at the
+   screen edge; its open position must clear the toolbox. */
+#outerContainer.viewsManagerOpen #viewsManager {
+  inset-inline-start: calc(8px + var(--cs-toolbox-width)) !important;
+}
+
+#viewsManager {
+  border: 1px solid var(--cs-separator);
+}
+
+/* The stock separator sits between the two page arrows, which pairs the
+   magnifier with the up arrow as if they were find next/previous. Split the
+   groups instead: sidebar | find | page navigation. */
+#toolbarViewerLeft > .hiddenSmallView .splitToolbarButtonSeparator {
+  display: none;
+}
+
+#toolbarViewerLeft > .toolbarButtonWithContainer,
+#toolbarViewerLeft > .hiddenSmallView {
+  border-left: 1px solid var(--cs-separator);
+  margin-left: 4px;
+  padding-left: 6px;
+}
+
+#csToolbox {
+  position: fixed;
+  left: 0;
+  top: var(--toolbar-height);
+  bottom: 0;
+  width: var(--cs-toolbox-width);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding-top: 8px;
+  background-color: var(--toolbar-bg-color, #f9f9fa);
+  border-right: 1px solid var(--cs-separator);
+  z-index: 100;
+}
+
+.csToolButton {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--main-color, #0c0c0d);
+  cursor: default;
+}
+
+.csToolButton:hover {
+  background-color: var(--button-hover-color, rgb(0 0 0 / 0.1));
+}
+
+.csToolButton.active {
+  background-color: var(--toggled-btn-bg-color, rgb(0 0 0 / 0.2));
+}
+
+/* Select rides on STAMP mode; its layer cursor must not suggest stamping. */
+body[data-cs-tool="select"] .annotationEditorLayer {
+  cursor: default !important;
+}
+
+/* Pen and highlighter are picked-up utensils: strokes pass through existing
+   objects instead of grabbing them. */
+body[data-cs-tool="pen"] [id^="pdfjs_internal_editor_"],
+body[data-cs-tool="highlighter"] [id^="pdfjs_internal_editor_"] {
+  pointer-events: none !important;
+}
+
+/* Inkscape-style selection controls: dashed bounding box, double-headed
+   scale arrows outside the box (diagonal on corners, straight on edges). */
+[id^="pdfjs_internal_editor_"].selectedEditor {
+  outline: 1px dashed light-dark(rgb(0 0 0 / 0.7), rgb(255 255 255 / 0.7)) !important;
+}
+
+.annotationEditorLayer .resizers > .resizer {
+  --cs-handle: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M1 8 L5.5 3.5 L5.5 6 L10.5 6 L10.5 3.5 L15 8 L10.5 12.5 L10.5 10 L5.5 10 L5.5 12.5 Z" fill="%232e5a8c" stroke="white" stroke-width="1" stroke-linejoin="round"/></svg>');
+  width: 16px !important;
+  height: 16px !important;
+  background: var(--cs-handle) center / contain no-repeat !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.annotationEditorLayer .resizers > .resizer.topLeft {
+  top: -19px !important;
+  left: -19px !important;
+  transform: rotate(45deg);
+}
+
+.annotationEditorLayer .resizers > .resizer.topRight {
+  top: -19px !important;
+  left: auto !important;
+  right: -19px;
+  transform: rotate(-45deg);
+}
+
+.annotationEditorLayer .resizers > .resizer.bottomLeft {
+  top: auto !important;
+  bottom: -19px;
+  left: -19px !important;
+  transform: rotate(-45deg);
+}
+
+.annotationEditorLayer .resizers > .resizer.bottomRight {
+  top: auto !important;
+  bottom: -19px;
+  left: auto !important;
+  right: -19px;
+  transform: rotate(45deg);
+}
+
+.annotationEditorLayer .resizers > .resizer.topMiddle {
+  top: -19px !important;
+  left: calc(50% - 8px) !important;
+  transform: rotate(90deg);
+}
+
+.annotationEditorLayer .resizers > .resizer.bottomMiddle {
+  top: auto !important;
+  bottom: -19px;
+  left: calc(50% - 8px) !important;
+  transform: rotate(90deg);
+}
+
+.annotationEditorLayer .resizers > .resizer.middleLeft {
+  top: calc(50% - 8px) !important;
+  left: -19px !important;
+}
+
+.annotationEditorLayer .resizers > .resizer.middleRight {
+  top: calc(50% - 8px) !important;
+  left: auto !important;
+  right: -19px;
+}
+
+.csMarquee {
+  position: fixed;
+  z-index: 99;
+  pointer-events: none;
+  border: 1px solid var(--progressBar-color, #0a84ff);
+  background-color: rgb(10 132 255 / 0.12);
+}
+
+#csContextMenu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 170px;
+  padding: 4px 0;
+  background-color: var(--doorhanger-bg-color, #fff);
+  border: 1px solid var(--doorhanger-border-color, rgb(0 0 0 / 0.2));
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
+}
+
+.csMenuItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  padding: 4px 12px;
+  border: none;
+  background: none;
+  color: var(--main-color, #0c0c0d);
+  font: message-box;
+  text-align: left;
+  cursor: default;
+}
+
+.csMenuItem:hover:not(:disabled) {
+  background-color: var(--button-hover-color, rgb(0 0 0 / 0.1));
+}
+
+.csMenuItem:disabled {
+  opacity: 0.4;
+}
+
+.csMenuKeys {
+  opacity: 0.6;
+}
+
+.csMenuSep {
+  height: 1px;
+  margin: 4px 0;
+  background-color: var(--separator-color, rgb(0 0 0 / 0.15));
+}

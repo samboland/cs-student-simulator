@@ -25,6 +25,8 @@ F5 launches the extension development host. Open test-fixtures/sample.pdf there.
 - `src/pdfEditorProvider.ts`: CustomEditorProvider save lifecycle. Bytes go to the webview as a plain ArrayBuffer; Node Buffers do not survive webview serialization.
 - `media/glue/vscode-glue.mjs`: webview side. Feeds bytes to `PDFViewerApplication.open`, runs `saveDocument()` on request, posts `edited` on the `editingstateschanged` event (PDF.js 6 name; older builds called it `annotationeditorstateschanged`), serves the worker as a same-origin blob URL to avoid the fake-worker fallback.
 - `media/glue/vscode-overrides.css`: neutralizes VS Code's injected body padding (it shifts the whole viewer off-frame) and centers the toolbar.
+- `media/glue/toolbox.mjs` + `toolbox.css`: left toolbox and tool state machine. Tool model: pen/highlighter/text/image only create (pen and highlighter get pointer-events: none on editors); select owns move, marquee, context menu. Select rides on STAMP mode because a STAMP click on the empty layer never creates. Single-click selection must not change tools: uiManager.updateToolbar is monkey-patched to a no-op while select is active, since setSelected dispatches a mode switch to the clicked editor's type. Double click switches to the object's own tool (text transiently, without a mode switch).
+- `media/glue/select-tool.mjs`: rubber band selection and context menu on top of the uiManager (captured from the "annotationeditoruimanager" eventBus event). Copy/cut/paste call uiManager methods with a fake ClipboardEvent holding a module-level DataTransfer.
 
 ## Working efficiently here
 
@@ -36,9 +38,13 @@ F5 launches the extension development host. Open test-fixtures/sample.pdf there.
 
 ## Writing style, non-negotiable
 
-Applies to all prose in this repo: docs, comments, commit messages, README.
+Applies to all prose in this repo: docs, comments, commit messages, README, and
+chat replies.
 
 - No em dashes. Ever. Use a period, comma, colon, or parentheses.
 - No AI prose patterns: no "not just X, but Y", no rule-of-three flourishes, no "seamless", "robust", "comprehensive", "delve", "leverage", no negative parallelism, no promotional adjectives, no summary sentences that restate what was just said.
 - Comments only state constraints the code cannot show. No narration, no justification of changes.
 - Plain sentences. If a line reads like marketing or a model wrote it, rewrite it.
+- Chat replies: keep them short. Say what changed, whether it works, what to do
+  next. Common words over fancy ones. No preamble, no recap of what was just
+  said, no listing every file touched. One or two lines beats a section.
